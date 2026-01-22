@@ -1,0 +1,31 @@
+export interface FileDetails {
+  scenarioId: string;
+  client: string;
+  fileInfo: string;
+  inputFileDescription: string;
+  sampleFile: string;
+  downloadFileType: string;
+  testCaseType?: string | null;
+  validationMessage?: string | null;
+  fromDate?: string | null;
+  toDate?: string | null;
+  includeDeletedFile?: boolean | null;
+  renewalSampleFile?: string | null;
+  renewalFileDescription?: string | null;
+  returnFileDescription?: string | null;
+  dischargeSampleFile?: string | null;
+  dischargeFileDescription?: string | null;
+  copSampleFile?: string | null;
+  copFileDescription?: string | null;
+  greenlightDischargeSampleFile?: string | null;
+  greenlightDischargeFileDescription?: string | null;
+  batchNumber?: string;
+  partnerReference?: string;
+  inputFileName?: string;
+  uniqueId?: string;
+  orderId?: string;
+  summaryReportFileName?: string;
+  returnFileName?: string;
+  baseRegistrationNum?: string;
+  downloadFilePath?: string;
+}
