@@ -76,7 +76,18 @@ export class HangfireJobsPage {
     await db.validateHandshakeJobStatus(fileDetails);
     console.log('Handshake job status validated in DB');
   }
-
+async goToHFJobsForReturnFile(db: any, fileDetails: any): Promise<void> {
+    await this.hangfireDashboard.click();
+    await this.hfJobs.click();
+    // Switch to frame is handled by frameLocator
+    await this.hfDashboardTab.click();
+    await this.hfDbRecurringJobsTab.click();
+    await this.triggerHFJob('FileClientProcessReadyApi');
+    console.log('Triggered FileClientProcessReadyApi Hangfire job');
+    await this.triggerHFJob('ClientFileScheduler');
+    console.log('Triggered ClientFileScheduler Hangfire job');
+   
+  }
   async triggerHFJob(job: string): Promise<void> {
     try {
       await this.page.waitForTimeout(1000);
