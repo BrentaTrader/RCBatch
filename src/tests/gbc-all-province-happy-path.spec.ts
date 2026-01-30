@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/test';
 import { LoginPage } from '../pages/login.page';
 import { loadEnv } from '../config/env';
-import { GbcOrchestrator } from '../services/gbcOrchestrator';
+import { Orchestrator } from '../services/orchestrator';
 
 test.describe('GBC All Province Happy Path', () => {
   test('GBC NF smoke', async ({ page, loginPage }) => {
@@ -13,7 +13,7 @@ test.describe('GBC All Province Happy Path', () => {
     console.log('Logged into web application');
 
     const scenarioId = 'GBC_AllProvinceHappyPath';
-    const orchestrator = new GbcOrchestrator();
+    const orchestrator = new Orchestrator();
     const fileDetails = await test.step('Run orchestrator path', async () => {
       return orchestrator.runGbcAllProvinceHappyPath(page, scenarioId, 'GBC', 'GBC_NF.XIF');
     });

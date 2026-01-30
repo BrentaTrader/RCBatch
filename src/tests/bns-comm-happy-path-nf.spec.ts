@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/test';
 import { loadEnv } from '../config/env';
-import { BnsCommOrchestrator } from '../services/bnsCommOrchestrator';
+import { Orchestrator } from '../services/orchestrator';
 
 test.describe('BNS Commercial Happy Path NF', () => {
   test('BNS COMM NF smoke', async ({ page, loginPage }) => {
@@ -11,7 +11,7 @@ test.describe('BNS Commercial Happy Path NF', () => {
     });
 
     const scenarioId = 'BNS_COMM_HappyPath_NF';
-    const orchestrator = new BnsCommOrchestrator();
+    const orchestrator = new Orchestrator();
     const fileDetails = await test.step('Run BNS COMM NF orchestrator', async () => {
       return orchestrator.runBnsCommHappyPathNF(page, scenarioId);
     });
