@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import path from 'path';
 import { FileDetails } from '../models/fileDetails';
-import { FordNfService } from './fordNfService';
+import { NfService } from './nfService';
 import { HangfireJobsPage } from '../pages/hangfire-jobs.page';
 import { DownloadPage } from '../pages/download.page';
 import { ExcelHelper } from '../utils/excelHelper';
@@ -25,10 +25,10 @@ export class FordOrchestrator {
       );
     }
 
-    const fordService = new FordNfService();
-    await fordService.createNfFileFc(fileDetails);
+    const nfService = new NfService();
+    await nfService.createFordNfFc(fileDetails);
 
-    const db = fordService.getDbService();
+    const db = nfService.getDbService();
     const hangfirePage = new HangfireJobsPage(page);
     await hangfirePage.goToFordHFJobs(db, fileDetails);
 

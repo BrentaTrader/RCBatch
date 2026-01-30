@@ -3,7 +3,7 @@ import { Page } from '@playwright/test';
 import path from 'path';
 import { loadScenarioData } from '../data/testData';
 import { FileDetails } from '../models/fileDetails';
-import { GbcNfService } from './gbcNfService';
+import { NfService } from './nfService';
 import { HangfireJobsPage } from '../pages/hangfire-jobs.page';
 import { processManualTransaction } from './processManualTransaction';
 import { ExcelHelper } from '../utils/excelHelper';
@@ -17,10 +17,10 @@ export class GbcOrchestrator {
     fileDetails.fileInfo = client;
     fileDetails.scenarioId = scenarioId;
 
-    const gbcNfService = new GbcNfService();
+    const nfService = new NfService();
 
     // Create NF file and set OrderId in fileDetails as a side effect
-    await gbcNfService.createNfFileXif(fileDetails);
+    await nfService.createGbcNfXif(fileDetails);
 
     if (!fileDetails.inputFileDescription) {
       throw new Error(
@@ -29,7 +29,7 @@ export class GbcOrchestrator {
       );
     }
 
-    const db = gbcNfService.getDbService();
+    const db = nfService.getDbService();
     const hangfirePage = new HangfireJobsPage(page);
     await hangfirePage.goToHFJobs(db, fileDetails);
 

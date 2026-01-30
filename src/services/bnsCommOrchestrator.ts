@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import path from 'path';
 import { FileDetails } from '../models/fileDetails';
-import { BnsCommNfService } from './bnsCommNfService';
+import { NfService } from './nfService';
 import { HangfireJobsPage } from '../pages/hangfire-jobs.page';
 import { DownloadPage } from '../pages/download.page';
 import { ExcelHelper } from '../utils/excelHelper';
@@ -19,8 +19,8 @@ export class BnsCommOrchestrator {
       throw new Error(`InputFileDescription is missing in TestData.xlsx for scenario ${scenarioId}.`);
     }
 
-    const service = new BnsCommNfService();
-    await service.createNfFileXml(fileDetails);
+    const service = new NfService();
+    await service.createBnsCommNfXml(fileDetails);
 
     const db = service.getDbService();
     const hangfirePage = new HangfireJobsPage(page);
