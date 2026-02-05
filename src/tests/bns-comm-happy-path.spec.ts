@@ -4,7 +4,7 @@ test.setTimeout(600000); // 10 minutes
 import { loadEnv } from '../config/env';
 import { Orchestrator } from '../services/orchestrator';
 
-test.describe('BNS Commercial Smoke', () => {
+test.describe('BNS Commercial Smoke', async () => {
   test('BNS COMM NF', async ({ page, loginPage }) => {
     const env = loadEnv();
     await test.step('Login to web app', async () => {
@@ -51,4 +51,63 @@ test.describe('BNS Commercial Smoke', () => {
     // Validate unique id present
     expect(dischargeFileDetails.uniqueId).toBeTruthy();
   });
+  test('BNS COMM Renewal', async ({ page, loginPage }) => {
+    const env = loadEnv();
+    // --- Cycle 1: Same as Happy Path ---
+    await test.step('Login to web app', async () => {
+      await loginPage.goto(env.webAppUrl);
+      await loginPage.login(env.adminUser, env.adminPassword);
+    });
+
+    const scenarioId = 'BNS_COMM_HappyPath_NF';
+    const orchestrator = new Orchestrator();
+
+    // Cycle 1: Generate and capture partnerReference
+    let fileDetails = await test.step('Run BNS COMM NF orchestrator', async () => {
+      return orchestrator.runBnsCommHappyPathNF(page, scenarioId);
+    });
+    const partnerReference = fileDetails.partnerReference;
+    const registrationNumber = fileDetails.baseRegistrationNum || '';
+
+    // --- Cycle 2: Renewal ---
+    const renewalScenarioId = 'BNS_COMM_RenewalHappyPath';
+    // Pass partnerReference explicitly to ensure it is the same
+    let RenewalFileDetails = await test.step('Run BNS COMM Discharge orchestrator', async () => {
+      // Set partnerReference in fileDetails for discharge
+      return orchestrator.runBnsCommHappyPathRenewal(page, renewalScenarioId, registrationNumber, partnerReference!);
+    });
+
+    // Validate unique id present
+    expect(RenewalFileDetails.uniqueId).toBeTruthy();
+  });
+  test('BNS COMM Amendment', async ({ page, loginPage }) => {
+    const env = loadEnv();
+    // --- Cycle 1: Same as Happy Path ---
+    await test.step('Login to web app', async () => {
+      await loginPage.goto(env.webAppUrl);
+      await loginPage.login(env.adminUser, env.adminPassword);
+    });
+
+    const scenarioId = 'BNS_COMM_HappyPath_NF';
+    const orchestrator = new Orchestrator();
+
+    // Cycle 1: Generate and capture partnerReference
+    let fileDetails = await test.step('Run BNS COMM NF orchestrator', async () => {
+      return orchestrator.runBnsCommHappyPathNF(page, scenarioId);
+    });
+    const partnerReference = fileDetails.partnerReference;
+    const registrationNumber = fileDetails.baseRegistrationNum || '';
+
+    // --- Cycle 2: Amendment ---
+    const amendmentScenarioId = 'BNS_COMM_AmendmentHappyPath';
+    // Pass partnerReference explicitly to ensure it is the same
+    let AmendmentFileDetails = await test.step('Run BNS COMM Amendment orchestrator', async () => {
+      // Set partnerReference in fileDetails for amendment
+      return orchestrator.runBnsCommHappyPathAmendment(page, amendmentScenarioId, registrationNumber, partnerReference!);
+    });
+
+    // Validate unique id present
+    expect(AmendmentFileDetails.uniqueId).toBeTruthy();
+  });
 });
+
