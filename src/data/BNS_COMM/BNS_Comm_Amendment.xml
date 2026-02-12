@@ -3,7 +3,7 @@
 	<Registration-List>
 			<Registration Type="Amendment">
 			<PPR Province="BC"/>
-			<Partner-Reference>MW_4.6RegressionAmdtestingBC</Partner-Reference>
+			<Partner-Reference>BNS_COMM_SMOKE_REFNUM</Partner-Reference>
 			<Contract>
 				<Shared-Income>YES</Shared-Income>
 				<Reason-Text> Add Debtor</Reason-Text>
@@ -28,7 +28,6 @@
 					<Transit>47696</Transit>
 				</Party>
 				<Party Type="Debtor-Business" Action="Add">
-				<Sync-Id>4</Sync-Id>
 					<Address>
 						<Street>2300 lawrence UNIT 4514</Street>
 						<City>NORTH YORK</City>
@@ -38,7 +37,6 @@
 					<Name>DESIGN Cast PRINTING INC</Name>
 				</Party>
 				<Party Type="Debtor-Individual" Action="Add">
-				<Sync-Id>5</Sync-Id>
 					<Address>
 						<Street>King Arther Street</Street>
 						<City>Gatineau </City>

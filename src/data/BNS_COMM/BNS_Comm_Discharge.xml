@@ -3,7 +3,7 @@
 	<Registration-List>
 	<Registration Type="Discharge">
 			<PPR Province="BC"/>
-			<Partner-Reference>BC_MW_4.6RegressionDischargeTest</Partner-Reference>
+			<Partner-Reference>BNS_COMM_SMOKE_REFNUM</Partner-Reference>
 			<Contract>
 				<Shared-Income>No</Shared-Income>
 				<Reason-Text>Testing current state -Discharge BC.</Reason-Text>

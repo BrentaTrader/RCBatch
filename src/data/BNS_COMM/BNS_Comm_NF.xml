@@ -3,7 +3,7 @@
 	<Registration-List>
 			<Registration Type="New">
 			<PPR Province="BC"/>
-			<Partner-Reference>US248812Test1</Partner-Reference>
+			<Partner-Reference>BNS_COMM_SMOKE_REFNUM</Partner-Reference>
 			<Contract>
 				<Term Unit="Year">5</Term>
 				<ON.Accounts>YES</ON.Accounts>
@@ -39,7 +39,6 @@
 					<Transit>47696</Transit>
 				</Party>
 				<Party Type="Debtor-Business">
-				<Sync-Id>1</Sync-Id>
 					<Address>
 						<Street>120 Jessup Lane</Street>
 						<City>Bath</City>
@@ -52,7 +51,6 @@
 					<Name>Michael Ranger Physiotherapy Professional Corporation</Name>
 				</Party>
 				<Party Type="Debtor-Individual" >
-				<Sync-Id>2</Sync-Id>
 					<Address>
 						<Street>1045, rue des Pasa</Street>
 						<City>Gatineau </City>
@@ -62,13 +60,12 @@
 					<Post-Search>
 						<Fax-Number>0000003020</Fax-Number>
 					</Post-Search>
-					<First-Name>Thomas</First-Name>
-					<Middle-Name>Reni Thomas</Middle-Name>
-					<Last-Name>A</Last-Name>
+					<First-Name>SMOKEFN</First-Name>
+					<Middle-Name></Middle-Name>
+					<Last-Name>SMOKELN</Last-Name>
 					<Birth-Date Format="yyyy-MM-dd HH:mm:ss">2020-10-16 00:00:00</Birth-Date>
 				</Party>
 				<Party Type="Debtor-Individual" >
-				<Sync-Id>3</Sync-Id>
 					<Address>
 						<Street>1045, rue des Pasa</Street>
 						<City>Gatineau </City>
@@ -78,15 +75,14 @@
 					<Post-Search>
 						<Fax-Number>0000003020</Fax-Number>
 					</Post-Search>
-					<First-Name>Reni</First-Name>
-					<Middle-Name>Thomas K I</Middle-Name>
-					<Last-Name>A</Last-Name>
+					<First-Name>SMOKEFNII</First-Name>
+					<Middle-Name></Middle-Name>
+					<Last-Name>SMOKELNII</Last-Name>
 					<Birth-Date Format="yyyy-MM-dd HH:mm:ss">2020-10-16 00:00:00</Birth-Date>
 				</Party>
 			</Party-List>
 			<Collaterals>
 				<Collateral Type="General">
-				<Sync-Id>1</Sync-Id>
 					<Description>Test BC</Description>
 				</Collateral>
 				</Collaterals>

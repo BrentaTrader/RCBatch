@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { loadEnv } from '../config/env';
 import { FileDetails } from '../models/fileDetails';
-import { DbService } from './dbService';
+import { DbService } from '../utils/dbUtility';
 import { LoginPage } from '../pages/login.page';
 import { HomePage } from '../pages/home.page';
 import { HangfireJobsPage } from '../pages/hangfire-jobs.page';

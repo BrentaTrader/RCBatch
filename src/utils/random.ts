@@ -39,3 +39,8 @@ export function generateBcRegistrationNumber(): string {
   }
   return `${value}A`;
 }
+
+export function generateFordReference(): string {
+  const fiveDigits = randomInt(10_000, 99_999).toString();
+  return `2AASM${fiveDigits}`;
+}

@@ -9,7 +9,6 @@ export interface EnvConfig {
   adminPassword: string;
   dbConnectionString: string;
   sftpRoot: string;
-  legacyDataRoot: string;
   downloadDirectory: string;
   cgeApiBaseUrl: string;
   cgeApiUser: string;
@@ -28,9 +27,6 @@ export function loadEnv(): EnvConfig {
     adminPassword: process.env.ADMIN_PASSWORD ?? 'Trader1!',
     dbConnectionString: process.env.DB_CONNECTION_STRING ?? 'Server=MRKREGDBVWQA43.DHLTD.CORP,1558;Database=CGE_MIDDLEWARE_QA;User Id=MWQAUser;Password=G8n!Zp4Qv2@Hk7Lm;Encrypt=true;TrustServerCertificate=true;',
     sftpRoot: process.env.SFTP_ROOT ?? '\\\\cms_uat_ftp_non_pci.dhltd.corp\\cms_uat_ftp_non_pci\\CMSUATNONPCI\\Usr\\cgecd_qa2',
-    legacyDataRoot:
-      process.env.LEGACY_DATA_ROOT ??
-      path.resolve(__dirname, '../../../../CD_Batch_5_2_Main/UIPageObjectModel/POMSeleniumTest/Data'),
     downloadDirectory: process.env.DOWNLOAD_DIRECTORY ?? path.resolve(process.cwd(), 'downloads'),
     cgeApiBaseUrl: process.env.CGE_API_BASE_URL ?? 'http://aqa1publicapiwebsvcs.cge.dhltd.corp',
     cgeApiUser: process.env.CGE_API_USER ?? 'superuser'

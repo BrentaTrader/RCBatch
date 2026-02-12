@@ -1,5 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { loadEnv } from '../config/env';
+import { FileDetails } from '../models/fileDetails';
+import { generateA8DigitReference, generateBatchNumber, generateBmoInputFileName, generateFordReference } from './random';
+
+const env = loadEnv();
 
 export async function ensureDirectory(targetDir: string): Promise<void> {
   await fs.mkdir(targetDir, { recursive: true });
@@ -139,3 +144,250 @@ export async function updateBatchNumberInFordFile(filePath: string, newBatchNumb
 
   await fs.writeFile(filePath, lines.join('\n'), 'utf-8');
 }
+
+export async function updateReferenceNumberInFordFile(filePath: string, reference: string): Promise<void> {
+  // Read all lines
+  const raw = await fs.readFile(filePath, 'utf-8');
+  const lines = raw.split(/\r?\n/);
+
+  // Update line 2 (index 1) - replace 2AASMOKERN with the new reference
+  if (lines.length > 1) {
+    lines[1] = lines[1].replace(/2AASMOKERN/g, reference);
+  }
+
+  await fs.writeFile(filePath, lines.join('\n'), 'utf-8');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper functions for timestamp and filename generation
+// ─────────────────────────────────────────────────────────────────────────────
+
+function formatTimestamp(): string {
+  const d = new Date();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const MM = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  let hh = d.getHours();
+  const mm = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  const hh12 = pad(((hh + 11) % 12) + 1);
+  return `${yyyy}${MM}${dd}_${hh12}${mm}${ss}`;
+}
+
+function formatAdjustedTimestamp(): string {
+  const d = new Date(Date.now() - 10 * 60 * 1000);
+  const pad2 = (n: number) => n.toString().padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const MM = pad2(d.getMonth() + 1);
+  const dd = pad2(d.getDate());
+  const HH = pad2(d.getHours());
+  const mm = pad2(d.getMinutes());
+  const ss = pad2(d.getSeconds());
+  const f = Math.floor(d.getMilliseconds() / 100);
+  return `_${yyyy}-${MM}-${dd}_${HH}-${mm}-${ss}_${f}`;
+}
+
+function buildGbcFileName(): string {
+  return `PPtoDH_${formatTimestamp()}.XIF`;
+}
+
+function buildSftpTarget(fileInfo: string, fileName: string): string {
+  switch (fileInfo.toUpperCase()) {
+    case 'GBC':
+      return path.join(env.sftpRoot, 'GBC', 'in', fileName);
+    case 'BMO':
+      return path.join(env.sftpRoot, 'BMO', 'in', fileName);
+    default:
+      throw new Error(`Client Format not found for ${fileInfo}`);
+  }
+}
+
+const sftpFolderByClient: Record<string, string> = {
+  BMO: path.join('BMO', 'in')
+};
+
+function buildSftpPathForClient(client: string, fileName: string): string {
+  const clientFolder = sftpFolderByClient[client];
+  if (!clientFolder) {
+    throw new Error(`SFTP folder mapping is missing for client ${client}.`);
+  }
+  return path.join(env.sftpRoot, clientFolder, fileName);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// File creation functions (formerly from inputFileCreation, nfFileService, nfService)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function createGbcNfFile(fileDetails: FileDetails): Promise<FileDetails> {
+  const scenarioArtifactsDir = path.join(process.cwd(), 'artifacts', fileDetails.scenarioId);
+  await ensureDirectory(scenarioArtifactsDir);
+
+  const inputFileName = buildGbcFileName();
+  const sourceFilePath = path.join(scenarioArtifactsDir, inputFileName);
+  await copyFile(fileDetails.sampleFile, sourceFilePath);
+
+  if (fileDetails.batchNumber) {
+    await updateBatchNumberInXifFile(sourceFilePath, fileDetails.batchNumber);
+  }
+
+  if (fileDetails.partnerReference) {
+    await updatePartnerReferenceInXifFile(sourceFilePath, fileDetails.partnerReference);
+  }
+
+  fileDetails.inputFileName = inputFileName;
+  const targetPath = buildSftpTarget(fileDetails.fileInfo, inputFileName);
+  const targetDir = path.dirname(targetPath);
+  await ensureDirectory(targetDir);
+  await clearDirectory(targetDir);
+  await copyFile(sourceFilePath, targetPath);
+  return fileDetails;
+}
+
+export async function createNfFileTilde(fileDetails: FileDetails): Promise<void> {
+  const scenarioArtifactsDir = path.join(process.cwd(), 'artifacts', fileDetails.scenarioId);
+  await ensureDirectory(scenarioArtifactsDir);
+
+  const fileStem = generateBmoInputFileName();
+  const localFileName = `${fileStem}.uif`;
+  const localFilePath = path.join(scenarioArtifactsDir, localFileName);
+  await copyFile(fileDetails.sampleFile, localFilePath);
+
+  fileDetails.batchNumber = generateBatchNumber();
+  fileDetails.partnerReference = generateA8DigitReference();
+
+  await updateBatchNumberInTildeFile(localFilePath, fileDetails.batchNumber);
+  await updateReferenceNumberInTildeFile(localFilePath, fileDetails.partnerReference);
+
+  const sftpTarget = buildSftpPathForClient(fileDetails.client, localFileName);
+  await copyFile(localFilePath, sftpTarget);
+
+  fileDetails.inputFileName = localFileName;
+}
+
+export async function createGbcNfXif(fileDetails: FileDetails): Promise<void> {
+  fileDetails.batchNumber = generateBatchNumber();
+  fileDetails.partnerReference = generateA8DigitReference();
+  await createGbcNfFile(fileDetails);
+}
+
+export async function createFordNfFc(fileDetails: FileDetails): Promise<void> {
+  const scenarioArtifactsDir = path.join(process.cwd(), 'artifacts', fileDetails.scenarioId);
+  await ensureDirectory(scenarioArtifactsDir);
+
+  const inputFileName = 'Canlien.fc';
+  const localFilePath = path.join(scenarioArtifactsDir, inputFileName);
+  await copyFile(fileDetails.sampleFile, localFilePath);
+
+  fileDetails.batchNumber = generateBatchNumber();
+  await updateBatchNumberInFordFile(localFilePath, fileDetails.batchNumber);
+  fileDetails.partnerReference = generateFordReference();
+  await updateReferenceNumberInFordFile(localFilePath, fileDetails.partnerReference);
+  
+  // align batchNumber with header-derived value, sanitize any leading '-'
+  const raw = (await fs.readFile(localFilePath, 'utf-8')).split(/\r?\n/);
+  const header = raw[0] ?? '';
+  const m = header.match(/\.([0-9]{6,})\s*$/) || header.match(/\.([0-9]{6,})/);
+  if (m && m[1]) {
+    fileDetails.batchNumber = m[1].replace(/^-/,'');
+  } else {
+    fileDetails.batchNumber = (fileDetails.batchNumber ?? '').replace(/^-/,'');
+  }
+
+  fileDetails.inputFileName = inputFileName;
+
+  const targetPath = path.join(env.sftpRoot, 'ford', 'in', inputFileName);
+  const targetDir = path.dirname(targetPath);
+  await ensureDirectory(targetDir);
+  await clearDirectory(targetDir);
+  await copyFile(localFilePath, targetPath);
+}
+
+export async function createBnsCommNfXml(fileDetails: FileDetails): Promise<void> {
+  const scenarioArtifactsDir = path.join(process.cwd(), 'artifacts', fileDetails.scenarioId);
+  await ensureDirectory(scenarioArtifactsDir);
+
+  const inputFileName = `xifdoc${formatAdjustedTimestamp()}.XML`;
+  const localFilePath = path.join(scenarioArtifactsDir, inputFileName);
+  await copyFile(fileDetails.sampleFile, localFilePath);
+
+  fileDetails.batchNumber = generateBatchNumber();
+  // Only generate partnerReference if not already set (so it can be passed from test for both cycles)
+  if (!fileDetails.partnerReference) {
+    fileDetails.partnerReference = generateA8DigitReference();
+  }
+  await updateBatchNumberInXifFile(localFilePath, fileDetails.batchNumber);
+  await updatePartnerReferenceInXifFile(localFilePath, fileDetails.partnerReference);
+
+  fileDetails.inputFileName = inputFileName;
+
+  const targetPath = path.join(env.sftpRoot, 'BNSCommercial', 'BNSXML', inputFileName);
+  const targetDir = path.dirname(targetPath);
+  await ensureDirectory(targetDir);
+  await clearDirectory(targetDir);
+  await copyFile(localFilePath, targetPath);
+}
+
+export async function createBnsCommDischargeXml(fileDetails: FileDetails): Promise<void> {
+  // Use sampleFile as the template path
+  const dischargeTemplatePath = fileDetails.sampleFile;
+  const scenarioArtifactsDir = path.resolve(process.cwd(), 'artifacts', fileDetails.scenarioId);
+  await fs.mkdir(scenarioArtifactsDir, { recursive: true });
+  const dischargeInputFileName = `xifdoc${formatAdjustedTimestamp()}.XML`;
+  const dischargeLocalFilePath = path.join(scenarioArtifactsDir, dischargeInputFileName);
+  await fs.copyFile(dischargeTemplatePath, dischargeLocalFilePath);
+
+  // Update batch number
+  let newBatchNumber = generateBatchNumber();
+  if (newBatchNumber.startsWith('-')) {
+    newBatchNumber = newBatchNumber.replace(/^-+/, '');
+  }
+  await updateBatchNumberInXifFile(dischargeLocalFilePath, newBatchNumber);
+
+  // Update partner reference
+  if (!fileDetails.partnerReference) {
+    throw new Error('partnerReference is undefined');
+  }
+  await updatePartnerReferenceInXifFile(dischargeLocalFilePath, fileDetails.partnerReference);
+
+  // Update PPR-Registration-Number
+  let dischargeContent = await fs.readFile(dischargeLocalFilePath, 'utf-8');
+  if (fileDetails.baseRegistrationNum) {
+    if (dischargeContent.match(/<PPR-Registration-Number>.*<\/PPR-Registration-Number>/i)) {
+      dischargeContent = dischargeContent.replace(/(<PPR-Registration-Number>)[^<]*(<\/PPR-Registration-Number>)/i, `$1${fileDetails.baseRegistrationNum}$2`);
+    } else if (dischargeContent.match(/<PPR-Registration-Number\s*\/?>(?!<)/i)) {
+      dischargeContent = dischargeContent.replace(/<PPR-Registration-Number\s*\/?>(?!<)/i, `<PPR-Registration-Number>${fileDetails.baseRegistrationNum}</PPR-Registration-Number>`);
+    }
+    await fs.writeFile(dischargeLocalFilePath, dischargeContent, 'utf-8');
+  } else {
+    throw new Error('baseRegistrationNum from cycle 1 is undefined');
+  }
+
+  // Update fileDetails for SFTP upload
+  fileDetails.sampleFile = dischargeLocalFilePath;
+  fileDetails.batchNumber = newBatchNumber;
+  fileDetails.inputFileName = dischargeInputFileName;
+  
+  const targetPath = path.join(env.sftpRoot, 'BNSCommercial', 'BNSXML', dischargeInputFileName);
+  const targetDir = path.dirname(targetPath);
+  await ensureDirectory(targetDir);
+  await clearDirectory(targetDir);
+  await copyFile(dischargeLocalFilePath, targetPath);
+}
+
+export async function createNfFile(fileDetails: FileDetails): Promise<void> {
+  const ext = (path.extname(fileDetails.sampleFile || '') || '').toLowerCase();
+  const client = (fileDetails.client || '').toUpperCase();
+  if (client === 'GBC' || ext === '.xif') {
+    return createGbcNfXif(fileDetails);
+  }
+  if (client === 'FORD' || ext === '.fc') {
+    return createFordNfFc(fileDetails);
+  }
+  if (client.includes('BNS') || ext === '.xml') {
+    return createBnsCommNfXml(fileDetails);
+  }
+  // default to XIF path
+  return createGbcNfXif(fileDetails);
+}
+
