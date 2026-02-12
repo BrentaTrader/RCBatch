@@ -28,15 +28,17 @@
 					<Transit>47696</Transit>
 				</Party>
 				<Party Type="Debtor-Business" Action="Add">
+				<Sync-Id>4</Sync-Id>
 					<Address>
 						<Street>2300 lawrence UNIT 4514</Street>
 						<City>NORTH YORK</City>
 						<Postal-Code>M9M2Y7</Postal-Code>
 						<Province>ON</Province>
 					</Address>
-					<Name>DESIGN Cast PRINTING INC</Name>
+					<Name>BNS smoke DESIGN</Name>
 				</Party>
 				<Party Type="Debtor-Individual" Action="Add">
+				<Sync-Id>5</Sync-Id>
 					<Address>
 						<Street>King Arther Street</Street>
 						<City>Gatineau </City>
@@ -46,8 +48,8 @@
 					<Post-Search>
 						<Fax-Number>0000003020</Fax-Number>
 					</Post-Search>
-					<First-Name>Rahul</First-Name>
-					<Middle-Name>Kumar K</Middle-Name>
+					<First-Name>BNSAMENDFN</First-Name>
+					<Middle-Name></Middle-Name>
 					<Last-Name>B</Last-Name>
 					<Birth-Date Format="yyyy-MM-dd HH:mm:ss">2020-10-16 00:00:00</Birth-Date>
 				</Party>
