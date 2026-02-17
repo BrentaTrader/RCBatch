@@ -5,7 +5,7 @@
 	</Batch>
 	<Registration-List>
 		<New-Registration>
-			<Partner-Reference>YTGBC.231917</Partner-Reference>
+			<Partner-Reference>GBC_SMOKE_REFNUM</Partner-Reference>
 			<PPR Province="YT"/>
 			<Contract>
 				<Date Format="yyyy-MM-dd">2019-12-06</Date>

@@ -83,11 +83,12 @@ export class TestDataHelper {
     if (!sampleFileRaw) return null;
     // If absolute, use as-is
     if (path.isAbsolute(sampleFileRaw)) return sampleFileRaw;
-    // If relative, try joining with legacyDataRoot and client folder when provided
+    // If relative, try joining with src/data folder and client folder when provided
+    const dataRoot = path.resolve(__dirname, '../data');
     if (client) {
-      return path.join(this.env.legacyDataRoot, client, sampleFileRaw);
+      return path.join(dataRoot, client, sampleFileRaw);
     }
-    return path.join(this.env.legacyDataRoot, sampleFileRaw);
+    return path.join(dataRoot, sampleFileRaw);
   }
 }
 

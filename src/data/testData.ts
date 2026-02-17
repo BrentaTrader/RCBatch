@@ -1,9 +1,6 @@
 import path from 'path';
-import { loadEnv } from '../config/env';
 import { FileDetails } from '../models/fileDetails';
 import { loadExcelScenarioMap } from '../utils/testDataHelper';
-
-const env = loadEnv();
 
 // Base hardcoded scenarios (fallback/defaults)
 const baseScenarioMap: Record<string, FileDetails> = {
@@ -12,7 +9,7 @@ const baseScenarioMap: Record<string, FileDetails> = {
     client: 'BMO',
     fileInfo: 'BMO',
     inputFileDescription: 'BMO New Finance Input File',
-    sampleFile: path.join(env.legacyDataRoot, 'BMO', 'BMO_AllProvincesWithValidData'),
+    sampleFile: path.join(__dirname, 'BMO', 'BMO_AllProvincesWithValidData'),
     downloadFileType: 'ClientSummaryFile',
     returnFileDescription: 'BMO Return File'
   }
