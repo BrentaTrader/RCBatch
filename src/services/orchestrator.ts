@@ -353,27 +353,36 @@ const downloadPage = new DownloadPage(page);
       await hangfirePage.goToHFJobsForReturnFile(db, fileDetails);
     };
 
-    let lastError: unknown;
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-      await triggerReturnGeneration();
-      await downloadPage.setDownloadCriteria(fileDetails);
-      await downloadPage.downloadAndVerify(fileDetails, downloadDir, testName);
-      try {
-        await this.validatePartnerReferenceInReturnFile(fileDetails, testName);
-        return;
-      } catch (error) {
-        lastError = error;
-        if (attempt < maxAttempts) {
-          await page.waitForTimeout(15000);
+    // Initial attempt: download and validate without triggering generation
+    await downloadPage.setDownloadCriteria(fileDetails);
+    await downloadPage.downloadAndVerify(fileDetails, downloadDir, testName);
+    try {
+      await this.validatePartnerReferenceInReturnFile(fileDetails, testName);
+      return; // Success on initial attempt
+    } catch (error) {
+      // Initial validation failed, proceed to retries with triggering
+      let lastError: unknown = error;
+      for (let attempt = 1; attempt < maxAttempts; attempt += 1) {
+        await triggerReturnGeneration();
+        await downloadPage.setDownloadCriteria(fileDetails);
+        await downloadPage.downloadAndVerify(fileDetails, downloadDir, testName);
+        try {
+          await this.validatePartnerReferenceInReturnFile(fileDetails, testName);
+          return; // Success on retry
+        } catch (retryError) {
+          lastError = retryError;
+          if (attempt < maxAttempts - 1) {
+            await page.waitForTimeout(15000);
+          }
         }
       }
+      const details = lastError instanceof Error ? lastError.message : String(lastError);
+      throw new Error(
+        `Return file validation failed after ${maxAttempts} attempts. ` +
+        `Expected partnerReference=${fileDetails.partnerReference}, batchNumber=${fileDetails.batchNumber}. ` +
+        `Last error: ${details}`
+      );
     }
-    const details = lastError instanceof Error ? lastError.message : String(lastError);
-    throw new Error(
-      `Return file validation failed after ${maxAttempts} attempts. ` +
-      `Expected partnerReference=${fileDetails.partnerReference}, batchNumber=${fileDetails.batchNumber}. ` +
-      `Last error: ${details}`
-    );
   }
 
   private async validatePartnerReferenceInReturnFile(fileDetails: FileDetails, testName: string): Promise<void> {
